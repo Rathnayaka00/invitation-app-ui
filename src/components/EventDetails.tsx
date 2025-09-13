@@ -28,8 +28,8 @@ const EventDetails = () => {
                 <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-[#d1a56b]/10 to-transparent pointer-events-none" />
                 <div className="relative">
                   <div className="space-y-6 md:space-y-8">
-                    <div className="flex md:items-start md:flex-row flex-col items-center text-center md:text-left md:space-x-5">
-                      <div className="bg-amber-100/80 backdrop-blur rounded-full p-3 md:p-4 shadow-inner mb-3 md:mb-0">
+                    <div className="flex items-start space-x-4 md:space-x-5">
+                      <div className="bg-amber-100/80 backdrop-blur rounded-full p-3 md:p-4 shadow-inner">
                         <Calendar className="text-amber-600" size={22} />
                       </div>
                       <div>
@@ -38,8 +38,8 @@ const EventDetails = () => {
                       </div>
                     </div>
 
-                    <div className="flex md:items-start md:flex-row flex-col items-center text-center md:text-left md:space-x-5">
-                      <div className="bg-amber-100/80 backdrop-blur rounded-full p-3 md:p-4 shadow-inner mb-3 md:mb-0">
+                    <div className="flex items-start space-x-4 md:space-x-5">
+                      <div className="bg-amber-100/80 backdrop-blur rounded-full p-3 md:p-4 shadow-inner">
                         <Clock className="text-amber-600" size={22} />
                       </div>
                       <div>
@@ -49,8 +49,8 @@ const EventDetails = () => {
                       </div>
                     </div>
 
-                    <div className="flex md:items-start md:flex-row flex-col items-center text-center md:text-left md:space-x-5">
-                      <div className="bg-amber-100/80 backdrop-blur rounded-full p-3 md:p-4 shadow-inner mb-3 md:mb-0">
+                    <div className="flex items-start space-x-4 md:space-x-5">
+                      <div className="bg-amber-100/80 backdrop-blur rounded-full p-3 md:p-4 shadow-inner">
                         <MapPin className="text-amber-600" size={22} />
                       </div>
                       <div>
