@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Send, CheckCircle, Heart, Users, User, ThumbsUp, ThumbsDown } from 'lucide-react';
 
@@ -10,6 +10,7 @@ interface FormData {
 }
 
 const RSVP = () => {
+  const formRef = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState<FormData>({
     name: '',
     attendees: '1',
@@ -18,6 +19,7 @@ const RSVP = () => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   
   // Compute attendee count for display (always a number; 0 if not attending)
   const attendeeCount = formData.attendance === 'yes'
@@ -29,13 +31,39 @@ const RSVP = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  // Open confirmation modal (validates first)
+  const handleOpenConfirm = (e: FormEvent) => {
     e.preventDefault();
+    const form = formRef.current;
+    if (form && !form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    setIsConfirmOpen(true);
+  };
+
+  // Final submit after confirmation
+  const actuallySubmit = async () => {
+    setIsConfirmOpen(false);
     setIsLoading(true);
-    
+    // Save to localStorage for Admin view
+    try {
+      const entry = {
+        name: formData.name.trim(),
+        attendance: formData.attendance,
+        attendees: attendeeCount,
+        message: formData.message.trim(),
+        submittedAt: new Date().toISOString(),
+      };
+      const existing = JSON.parse(localStorage.getItem('rsvps') || '[]');
+      const list = Array.isArray(existing) ? existing : [];
+      list.push(entry);
+      localStorage.setItem('rsvps', JSON.stringify(list));
+    } catch (_) {
+      // ignore localStorage errors
+    }
     // Simulate form submission
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
     setIsLoading(false);
     setIsSubmitted(true);
   };
@@ -113,7 +141,7 @@ const RSVP = () => {
         </div>
 
         <div className="max-w-2xl mx-auto">
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 md:p-10 shadow-xl">
+          <form ref={formRef} onSubmit={handleOpenConfirm} className="bg-white rounded-2xl p-6 md:p-10 shadow-xl">
             <div className="space-y-6">
               {/* Name field */}
               <div>
@@ -255,6 +283,68 @@ const RSVP = () => {
               </button>
             </div>
           </form>
+          {/* Confirmation Modal */}
+          {isConfirmOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setIsConfirmOpen(false)} aria-hidden="true" />
+              <div className="relative z-10 w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl border border-amber-100 overflow-hidden">
+                <div className="px-6 pt-6 pb-4 bg-gradient-to-r from-amber-50 to-amber-100">
+                  <h3 className="text-xl font-semibold text-amber-900">Confirm your details</h3>
+                  <p className="text-sm text-amber-800 mt-1">Please review before sending. You can edit if something is wrong.</p>
+                </div>
+                <div className="px-6 py-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <User className="text-amber-600 mt-0.5" size={18} />
+                    <div>
+                      <p className="text-xs text-gray-500">Name</p>
+                      <p className="text-gray-800 font-medium">{formData.name || '—'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    {formData.attendance === 'yes' ? (
+                      <ThumbsUp className="text-amber-600 mt-0.5" size={18} />
+                    ) : (
+                      <ThumbsDown className="text-amber-600 mt-0.5" size={18} />
+                    )}
+                    <div>
+                      <p className="text-xs text-gray-500">Attending</p>
+                      <p className="text-gray-800 font-medium">{formData.attendance === 'yes' ? 'Yes' : 'No'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Users className="text-amber-600 mt-0.5" size={18} />
+                    <div>
+                      <p className="text-xs text-gray-500">Number of Attendees</p>
+                      <p className="text-gray-800 font-medium">{attendeeCount}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-amber-600 mt-0.5"><path d="M4.5 5.25c0-1.243 1.007-2.25 2.25-2.25h10.5c1.243 0 2.25 1.007 2.25 2.25v13.5a.75.75 0 01-1.2.6l-3.9-3.25H6.75a2.25 2.25 0 01-2.25-2.25V5.25z"/></svg>
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-500">Message</p>
+                      <p className="text-gray-800 font-medium whitespace-pre-line break-words">{formData.message || '—'}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-6 pt-2 pb-6 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsConfirmOpen(false)}
+                    className="flex-1 py-3 px-4 rounded-lg border border-amber-200 text-amber-800 hover:bg-amber-50 transition"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={actuallySubmit}
+                    className="flex-1 py-3 px-4 rounded-lg font-semibold text-white bg-gradient-to-r from-[#9f7433] to-[#b18339] hover:from-[#b18339] hover:to-[#8d652d] shadow"
+                  >
+                    Confirm & Send
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer message */}

@@ -33,7 +33,7 @@ const EventDetails = () => {
                         <Calendar className="text-amber-600" size={22} />
                       </div>
                       <div>
-                        <p className="text-gray-700 font-medium">Thursday, October 10, 2025</p>
+                        <p className="text-gray-700 font-semibold">Thursday, October 10, 2025</p>
                       </div>
                     </div>
 
@@ -42,7 +42,7 @@ const EventDetails = () => {
                         <Clock className="text-amber-600" size={22} />
                       </div>
                       <div>
-                        <p className="text-gray-700 font-medium">From 9:00 AM onwards</p>
+                        <p className="text-gray-700 font-semibold">From 9:00 AM onwards</p>
                       </div>
                     </div>
 

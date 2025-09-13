@@ -12,7 +12,7 @@ function App() {
       <Hero />
       <Gallery />
       <EventDetails />
-      <RSVP />
+  <RSVP />
       <Footer />
     </div>
   );
