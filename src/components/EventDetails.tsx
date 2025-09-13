@@ -28,33 +28,29 @@ const EventDetails = () => {
                 <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-[#d1a56b]/10 to-transparent pointer-events-none" />
                 <div className="relative">
                   <div className="space-y-6 md:space-y-8">
-                    <div className="flex items-start space-x-4 md:space-x-5">
+                    <div className="flex items-center space-x-4 md:space-x-5">
                       <div className="bg-amber-100/80 backdrop-blur rounded-full p-3 md:p-4 shadow-inner">
                         <Calendar className="text-amber-600" size={22} />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-[#6b4a17] mb-1 tracking-wide uppercase text-xs">Date</h4>
                         <p className="text-gray-700 font-medium">Thursday, October 10, 2025</p>
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-4 md:space-x-5">
+                    <div className="flex items-center space-x-4 md:space-x-5">
                       <div className="bg-amber-100/80 backdrop-blur rounded-full p-3 md:p-4 shadow-inner">
                         <Clock className="text-amber-600" size={22} />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-[#6b4a17] mb-1 tracking-wide uppercase text-xs">Time</h4>
                         <p className="text-gray-700 font-medium">From 9:00 AM onwards</p>
-                        <p className="text-gray-500 text-sm italic">Please arrive 15 minutes early</p>
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-4 md:space-x-5">
+                    <div className="flex items-center space-x-4 md:space-x-5">
                       <div className="bg-amber-100/80 backdrop-blur rounded-full p-3 md:p-4 shadow-inner">
                         <MapPin className="text-amber-600" size={22} />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-[#6b4a17] mb-1 tracking-wide uppercase text-xs">Venue</h4>
                         <p className="text-gray-700 font-semibold text-base md:text-lg">Hotel Green Court</p>
                         <p className="text-gray-600">Grand Ballroom - 2nd Floor</p>
                         <p className="text-gray-500">Homagama, Sri Lanka</p>
