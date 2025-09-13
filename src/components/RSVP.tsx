@@ -76,7 +76,7 @@ const RSVP = () => {
         </div>
 
         <div className="max-w-2xl mx-auto">
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 md:p-12 shadow-xl">
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 md:p-10 shadow-xl">
             <div className="space-y-6">
               {/* Name field */}
               <div>
@@ -103,8 +103,8 @@ const RSVP = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Will you be attending? *
                 </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <label className={`relative cursor-pointer transition-all duration-300 ${
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className={`block relative cursor-pointer transition-all duration-300 ${
                     formData.attendance === 'yes' ? 'scale-105' : ''
                   }`}>
                     <input
@@ -116,17 +116,17 @@ const RSVP = () => {
                       className="sr-only"
                       required
                     />
-                    <div className={`p-4 rounded-lg border-2 text-center transition-all duration-300 ${
+                    <div className={`p-4 rounded-lg border-2 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[56px] ${
                       formData.attendance === 'yes'
                         ? 'border-amber-500 bg-amber-50 text-amber-700'
                         : 'border-gray-300 hover:border-amber-300'
                     }`}>
-                      <CheckCircle className="mx-auto mb-2" size={24} />
-                      <span className="font-medium">Yes, I'll be there!</span>
+                      <CheckCircle className="mx-auto mb-1" size={24} />
+                      <span className="font-medium text-base">Yes</span>
                     </div>
                   </label>
 
-                  <label className={`relative cursor-pointer transition-all duration-300 ${
+                  <label className={`block relative cursor-pointer transition-all duration-300 ${
                     formData.attendance === 'no' ? 'scale-105' : ''
                   }`}>
                     <input
@@ -137,13 +137,13 @@ const RSVP = () => {
                       onChange={handleInputChange}
                       className="sr-only"
                     />
-                    <div className={`p-4 rounded-lg border-2 text-center transition-all duration-300 ${
+                    <div className={`p-4 rounded-lg border-2 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[56px] ${
                       formData.attendance === 'no'
                         ? 'border-amber-500 bg-amber-50 text-amber-700'
                         : 'border-gray-300 hover:border-amber-300'
                     }`}>
-                      <Heart className="mx-auto mb-2" size={24} />
-                      <span className="font-medium">Sorry, can't make it</span>
+                      <Heart className="mx-auto mb-1" size={24} />
+                      <span className="font-medium text-base">Sorry</span>
                     </div>
                   </label>
                 </div>

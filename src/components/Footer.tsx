@@ -2,7 +2,7 @@ import { Heart } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-t from-[#9f7433] to-[#b18339] text-white">
+    <footer className="bg-gradient-to-r from-[#9f7433] to-[#b18339] text-white">
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="flex flex-col items-center text-center gap-3">
           <div className="flex items-center justify-center mb-2">
