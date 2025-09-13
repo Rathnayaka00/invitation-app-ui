@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { Send, CheckCircle, Heart, Users, User } from 'lucide-react';
+import { Send, CheckCircle, Heart, Users, User, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 interface FormData {
   name: string;
@@ -18,6 +18,11 @@ const RSVP = () => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Compute attendee count for display (always a number; 0 if not attending)
+  const attendeeCount = formData.attendance === 'yes'
+    ? Math.max(1, parseInt(formData.attendees || '1', 10) || 1)
+    : 0;
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -51,10 +56,42 @@ const RSVP = () => {
                   : `Thank you for letting us know, ${formData.name}. We'll miss you on our special day.`
                 }
               </p>
+              {/* Always show the attendee number after submit */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200 text-amber-800 mb-6">
+                <Users size={18} />
+                <span className="font-semibold">Attendees: {attendeeCount}</span>
+              </div>
               <div className="flex justify-center space-x-2">
                 <Heart className="text-[#b18339]  animate-pulse" size={20} />
                 <Heart className="text-[#b18339]  animate-pulse" size={20} style={{ animationDelay: '0.5s' }} />
                 <Heart className="text-[#b18339]  animate-pulse" size={20} style={{ animationDelay: '1s' }} />
+              </div>
+              {/* Keep contact numbers visible after submit */}
+              <div className="text-center mt-8">
+                <p className="text-gray-600 text-sm mb-3">Can't fill out the form? Contact us directly:</p>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <a
+                    href="tel:0771908356"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 hover:shadow-sm transition-colors"
+                    aria-label="Call 0771908356"
+                  >
+                    {/* Phone icon inline via SVG to avoid extra imports */}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                      <path d="M2.25 6.75c0-1.243 1.007-2.25 2.25-2.25h2.059c.95 0 1.774.64 2.026 1.558l.533 1.975a2.25 2.25 0 01-.52 2.088l-1.21 1.21a16.5 16.5 0 006.708 6.708l1.21-1.21a2.25 2.25 0 012.088-.52l1.975.533a2.25 2.25 0 011.558 2.026V19.5a2.25 2.25 0 01-2.25 2.25H18c-8.285 0-15-6.715-15-15v-.75z" />
+                    </svg>
+                  077 190 8356
+                  </a>
+                  <a
+                    href="tel:0766721005"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 hover:shadow-sm transition-colors"
+                    aria-label="Call 0766721005"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                      <path d="M2.25 6.75c0-1.243 1.007-2.25 2.25-2.25h2.059c.95 0 1.774.64 2.026 1.558l.533 1.975a2.25 2.25 0 01-.52 2.088l-1.21 1.21a16.5 16.5 0 006.708 6.708l1.21-1.21a2.25 2.25 0 012.088-.52l1.975.533a2.25 2.25 0 011.558 2.026V19.5a2.25 2.25 0 01-2.25 2.25H18c-8.285 0-15-6.715-15-15v-.75z" />
+                    </svg>
+                    076 672 1005
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -121,8 +158,8 @@ const RSVP = () => {
                         ? 'border-amber-500 bg-amber-50 text-amber-700'
                         : 'border-gray-300 hover:border-amber-300'
                     }`}>
-                      <CheckCircle className="mx-auto mb-1" size={24} />
-                      <span className="font-medium text-base">Yes</span>
+                      <ThumbsUp className="mx-auto mb-1" size={24} />
+                      <span className="font-medium text-base">Happily Accept</span>
                     </div>
                   </label>
 
@@ -142,8 +179,8 @@ const RSVP = () => {
                         ? 'border-amber-500 bg-amber-50 text-amber-700'
                         : 'border-gray-300 hover:border-amber-300'
                     }`}>
-                      <Heart className="mx-auto mb-1" size={24} />
-                      <span className="font-medium text-base">Sorry</span>
+                      <ThumbsDown className="mx-auto mb-1" size={24} />
+                      <span className="font-medium text-base">With Regret Decline</span>
                     </div>
                   </label>
                 </div>
@@ -157,20 +194,24 @@ const RSVP = () => {
                   </label>
                   <div className="relative">
                     <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <select
+                    <input
+                      type="number"
                       id="attendees"
                       name="attendees"
+                      min={1}
+                      max={20}
+                      step={1}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={formData.attendees}
                       onChange={handleInputChange}
+                      required
                       className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-300"
-                    >
-                      {[...Array(6)].map((_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                          {i + 1} {i === 0 ? 'person' : 'people'}
-                        </option>
-                      ))}
-                    </select>
+                      placeholder="e.g., 1"
+                      aria-describedby="attendees-help"
+                    />
                   </div>
+                  <p id="attendees-help" className="mt-1 text-xs text-gray-500">Enter total number coming with you.</p>
                 </div>
               )}
 
