@@ -4,7 +4,6 @@ import RSVP from './components/RSVP';
 import EventDetails from './components/EventDetails';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
-import Admin from './components/Admin';
 
 function App() {
   return (
@@ -14,7 +13,6 @@ function App() {
       <Gallery />
       <EventDetails />
       <RSVP />
-      <Admin />
       <Footer />
     </div>
   );

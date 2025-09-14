@@ -11,7 +11,7 @@ interface RsvpEntry {
   submittedAt: string; // ISO
 }
 
-const DEFAULT_HINT = 'Enter admin passcode (e.g., admin123)';
+const DEFAULT_HINT = 'Enter admin passcode';
 
 const Admin = () => {
   const [isAuthed, setIsAuthed] = useState<boolean>(() => isAuthenticated());
@@ -34,6 +34,29 @@ const Admin = () => {
   useEffect(() => {
     if (isAuthed) {
       fetchUsers();
+    }
+  }, [isAuthed]);
+
+  // Auto-refresh when browser is refreshed/window regains focus
+  useEffect(() => {
+    if (isAuthed) {
+      const handleFocus = () => {
+        fetchUsers();
+      };
+      
+      const handleVisibilityChange = () => {
+        if (!document.hidden && isAuthed) {
+          fetchUsers();
+        }
+      };
+
+      window.addEventListener('focus', handleFocus);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      return () => {
+        window.removeEventListener('focus', handleFocus);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     }
   }, [isAuthed]);
 
@@ -84,7 +107,7 @@ const Admin = () => {
             Admin
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            View RSVP responses (local only)
+            View RSVP responses
           </p>
         </div>
 
@@ -140,19 +163,35 @@ const Admin = () => {
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
                     <Users size={18} />
-                    <span className="font-semibold">Attendees: {loadingUsers ? '...' : totals.totalAttendees}</span>
+                    <span className="font-semibold">Attendees Count: {loadingUsers ? '...' : totals.totalAttendees}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <button 
                     onClick={fetchUsers} 
                     disabled={loadingUsers}
-                    className="text-amber-700 hover:text-amber-800 text-sm underline disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors shadow-sm"
                   >
-                    {loadingUsers ? 'Refreshing...' : 'Refresh'}
+                    {loadingUsers ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Refreshing...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Refresh
+                      </>
+                    )}
                   </button>
-                  <button onClick={logout} className="text-amber-700 hover:text-amber-800 inline-flex items-center gap-1">
-                    <LogOut size={18} /> Logout
+                  <button 
+                    onClick={logout} 
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white bg-red-500 hover:bg-red-600 transition-colors shadow-sm"
+                  >
+                    <LogOut size={16} />
+                    Logout
                   </button>
                 </div>
               </div>

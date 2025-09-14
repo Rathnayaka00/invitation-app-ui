@@ -212,7 +212,7 @@ const RSVP = () => {
                         : 'border-gray-300 hover:border-amber-300'
                     }`}>
                       <ThumbsUp className="mx-auto mb-1" size={24} />
-                      <span className="font-medium text-base">Happily Accept</span>
+                      <span className="font-medium text-base">Yes,I'll be there!</span>
                     </div>
                   </label>
 
@@ -233,7 +233,7 @@ const RSVP = () => {
                         : 'border-gray-300 hover:border-amber-300'
                     }`}>
                       <ThumbsDown className="mx-auto mb-1" size={24} />
-                      <span className="font-medium text-base">With Regret Decline</span>
+                      <span className="font-medium text-base">Sorry,I can't make it.</span>
                     </div>
                   </label>
                 </div>
