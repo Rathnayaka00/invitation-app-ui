@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Send, CheckCircle, Heart, Users, User, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { createUser } from '../services/userService';
 
 interface FormData {
   name: string;
@@ -20,6 +21,7 @@ const RSVP = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Compute attendee count for display (always a number; 0 if not attending)
   const attendeeCount = formData.attendance === 'yes'
@@ -46,26 +48,44 @@ const RSVP = () => {
   const actuallySubmit = async () => {
     setIsConfirmOpen(false);
     setIsLoading(true);
-    // Save to localStorage for Admin view
+    setError(null);
+    
     try {
-      const entry = {
+      // Prepare data for backend according to your API schema
+      const userData = {
         name: formData.name.trim(),
-        attendance: formData.attendance,
-        attendees: attendeeCount,
-        message: formData.message.trim(),
-        submittedAt: new Date().toISOString(),
+        status: formData.attendance === 'yes' ? 1 : 0, // 1 for accept, 0 for decline
+        count: formData.attendance === 'yes' ? attendeeCount : null,
+        message: formData.message.trim() || null
       };
-      const existing = JSON.parse(localStorage.getItem('rsvps') || '[]');
-      const list = Array.isArray(existing) ? existing : [];
-      list.push(entry);
-      localStorage.setItem('rsvps', JSON.stringify(list));
-    } catch (_) {
-      // ignore localStorage errors
+
+      // Submit to backend
+      await createUser(userData);
+      
+      // Also save to localStorage as backup for offline viewing
+      try {
+        const entry = {
+          name: formData.name.trim(),
+          attendance: formData.attendance,
+          attendees: attendeeCount,
+          message: formData.message.trim(),
+          submittedAt: new Date().toISOString(),
+        };
+        const existing = JSON.parse(localStorage.getItem('rsvps') || '[]');
+        const list = Array.isArray(existing) ? existing : [];
+        list.push(entry);
+        localStorage.setItem('rsvps', JSON.stringify(list));
+      } catch (_) {
+        // ignore localStorage errors
+      }
+      
+      setIsLoading(false);
+      setIsSubmitted(true);
+    } catch (error) {
+      setIsLoading(false);
+      setError(error instanceof Error ? error.message : 'Failed to submit RSVP. Please try again.');
+      console.error('RSVP submission error:', error);
     }
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    setIsSubmitted(true);
   };
 
   if (isSubmitted) {
@@ -142,6 +162,11 @@ const RSVP = () => {
 
         <div className="max-w-2xl mx-auto">
           <form ref={formRef} onSubmit={handleOpenConfirm} className="bg-white rounded-2xl p-6 md:p-10 shadow-xl">
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800 text-sm">{error}</p>
+              </div>
+            )}
             <div className="space-y-6">
               {/* Name field */}
               <div>

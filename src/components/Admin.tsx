@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Lock, LogOut, Users, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { adminLogin, saveToken, removeToken, isAuthenticated } from '../services/authService';
+import { getAllUsers, User } from '../services/userService';
 
 interface RsvpEntry {
   name: string;
@@ -9,57 +11,69 @@ interface RsvpEntry {
   submittedAt: string; // ISO
 }
 
-const PASSCODE_KEY = '1234';
-const DEFAULT_HINT = 'Hint: Ask the couple for the admin passcode';
+const DEFAULT_HINT = 'Enter admin passcode (e.g., admin123)';
 
 const Admin = () => {
-  const [isAuthed, setIsAuthed] = useState<boolean>(() => localStorage.getItem(PASSCODE_KEY) === '1');
+  const [isAuthed, setIsAuthed] = useState<boolean>(() => isAuthenticated());
   const [pass, setPass] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
 
-  const data: RsvpEntry[] = useMemo(() => {
-    try {
-      const raw = localStorage.getItem('rsvps');
-      const arr = JSON.parse(raw || '[]');
-      if (!Array.isArray(arr)) return [];
-      return arr as RsvpEntry[];
-    } catch {
-      return [];
+  // Calculate totals from backend users data
+  const totals = useMemo(() => {
+    const yes = users.filter(u => u.status === 1);
+    const no = users.filter(u => u.status === 0);
+    const count = yes.reduce((sum, u) => sum + (u.count || 0), 0);
+    return { yes: yes.length, no: no.length, totalAttendees: count };
+  }, [users]);
+
+  // Load users when authenticated
+  useEffect(() => {
+    if (isAuthed) {
+      fetchUsers();
     }
   }, [isAuthed]);
 
-  const totals = useMemo(() => {
-    const yes = data.filter(d => d.attendance === 'yes');
-    const no = data.filter(d => d.attendance === 'no');
-    const count = yes.reduce((sum, d) => sum + (Number(d.attendees) || 0), 0);
-    return { yes: yes.length, no: no.length, totalAttendees: count };
-  }, [data]);
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    setUsersError(null);
+    try {
+      const fetchedUsers = await getAllUsers();
+      setUsers(fetchedUsers);
+    } catch (error) {
+      setUsersError(error instanceof Error ? error.message : 'Failed to load users');
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
 
-  useEffect(() => {
-    // Recompute on storage changes from other tabs
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'rsvps') {
-        // trigger re-read via isAuthed dependency flip
-        setIsAuthed(v => v);
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
-  const tryLogin = () => {
-    // Simple passcode: last names initials + date (example). Replace as needed.
-    const expected = 'HS-1010'; // TODO: customize or move to .env if backend added
-    if (pass.trim() === expected) {
-      localStorage.setItem(PASSCODE_KEY, '1');
+  const tryLogin = async () => {
+    if (!pass.trim()) return;
+    
+    setIsLoggingIn(true);
+    setLoginError(null);
+    
+    try {
+      const response = await adminLogin(pass.trim());
+      saveToken(response.access_token);
       setIsAuthed(true);
-    } else {
-      alert('Incorrect passcode');
+      setPass('');
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Invalid passcode');
+      console.error('Login error:', error);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem(PASSCODE_KEY);
+    removeToken();
     setIsAuthed(false);
+    setUsers([]);
   };
 
   return (
@@ -80,19 +94,34 @@ const Admin = () => {
               <Lock className="text-amber-600" size={20} />
               <h3 className="text-lg font-semibold text-gray-800">Passcode Required</h3>
             </div>
+            {loginError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800 text-sm">{loginError}</p>
+              </div>
+            )}
             <label className="block text-sm font-medium text-gray-700 mb-2">Enter passcode</label>
             <input
               type="password"
               value={pass}
               onChange={(e) => setPass(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              onKeyPress={(e) => e.key === 'Enter' && tryLogin()}
+              disabled={isLoggingIn}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent disabled:bg-gray-100"
               placeholder={DEFAULT_HINT}
             />
             <button
               onClick={tryLogin}
-              className="mt-4 w-full py-3 px-4 rounded-lg font-semibold text-white bg-gradient-to-r from-[#9f7433] to-[#b18339] hover:from-[#b18339] hover:to-[#8d652d] shadow"
+              disabled={isLoggingIn || !pass.trim()}
+              className="mt-4 w-full py-3 px-4 rounded-lg font-semibold text-white bg-gradient-to-r from-[#9f7433] to-[#b18339] hover:from-[#b18339] hover:to-[#8d652d] shadow disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              Login
+              {isLoggingIn ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Logging in...
+                </>
+              ) : (
+                'Login'
+              )}
             </button>
           </div>
         ) : (
@@ -103,47 +132,66 @@ const Admin = () => {
                 <div className="flex flex-wrap items-center gap-2 md:gap-3">
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
                     <ThumbsUp size={18} />
-                    <span className="font-semibold">Yes: {totals.yes}</span>
+                    <span className="font-semibold">Yes: {loadingUsers ? '...' : totals.yes}</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
                     <ThumbsDown size={18} />
-                    <span className="font-semibold">No: {totals.no}</span>
+                    <span className="font-semibold">No: {loadingUsers ? '...' : totals.no}</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
                     <Users size={18} />
-                    <span className="font-semibold">Attendees: {totals.totalAttendees}</span>
+                    <span className="font-semibold">Attendees: {loadingUsers ? '...' : totals.totalAttendees}</span>
                   </div>
                 </div>
-                <button onClick={logout} className="self-start md:self-auto text-amber-700 hover:text-amber-800 inline-flex items-center gap-1">
-                  <LogOut size={18} /> Logout
-                </button>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={fetchUsers} 
+                    disabled={loadingUsers}
+                    className="text-amber-700 hover:text-amber-800 text-sm underline disabled:opacity-50"
+                  >
+                    {loadingUsers ? 'Refreshing...' : 'Refresh'}
+                  </button>
+                  <button onClick={logout} className="text-amber-700 hover:text-amber-800 inline-flex items-center gap-1">
+                    <LogOut size={18} /> Logout
+                  </button>
+                </div>
               </div>
             </div>
 
+            {usersError && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800 text-sm">{usersError}</p>
+              </div>
+            )}
+
             {/* Mobile list (cards) */}
             <div className="md:hidden space-y-3">
-              {data.length === 0 ? (
+              {loadingUsers ? (
+                <div className="text-center text-gray-500 py-6 bg-white rounded-2xl shadow-sm border border-amber-100/60">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500 mx-auto mb-2"></div>
+                  Loading RSVPs...
+                </div>
+              ) : users.length === 0 ? (
                 <div className="text-center text-gray-500 py-6 bg-white rounded-2xl shadow-sm border border-amber-100/60">No RSVPs yet</div>
               ) : (
-                data.slice().reverse().map((row, idx) => (
-                  <div key={idx} className="bg-white rounded-2xl p-4 shadow-sm border border-amber-100/60">
+                users.slice().reverse().map((user, idx) => (
+                  <div key={user.id || idx} className="bg-white rounded-2xl p-4 shadow-sm border border-amber-100/60">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-base font-semibold text-gray-800 break-words">{row.name}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{new Date(row.submittedAt).toLocaleString()}</p>
+                        <p className="text-base font-semibold text-gray-800 break-words">{user.name}</p>
                       </div>
-                      <div className={`px-2.5 py-1 rounded-full text-xs font-semibold ${row.attendance === 'yes' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'}`}>
-                        {row.attendance === 'yes' ? 'Yes' : 'No'}
+                      <div className={`px-2.5 py-1 rounded-full text-xs font-semibold ${user.status === 1 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'}`}>
+                        {user.status === 1 ? 'Yes' : 'No'}
                       </div>
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
                       <div className="text-gray-500">People</div>
-                      <div className="text-gray-800">{row.attendees}</div>
+                      <div className="text-gray-800">{user.count || 0}</div>
                     </div>
-                    {row.message && (
+                    {user.message && (
                       <div className="mt-3">
                         <div className="text-gray-500 text-sm">Message</div>
-                        <div className="text-gray-800 whitespace-pre-line break-words">{row.message}</div>
+                        <div className="text-gray-800 whitespace-pre-line break-words">{user.message}</div>
                       </div>
                     )}
                   </div>
@@ -161,22 +209,29 @@ const Admin = () => {
                       <th className="text-left px-4 py-3 font-semibold">Attending</th>
                       <th className="text-left px-4 py-3 font-semibold">People</th>
                       <th className="text-left px-4 py-3 font-semibold">Message</th>
-                      <th className="text-left px-4 py-3 font-semibold">Submitted</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {data.length === 0 ? (
+                    {loadingUsers ? (
                       <tr>
-                        <td colSpan={5} className="text-center text-gray-500 py-6">No RSVPs yet</td>
+                        <td colSpan={4} className="text-center text-gray-500 py-6">
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-500 mr-2"></div>
+                            Loading RSVPs...
+                          </div>
+                        </td>
+                      </tr>
+                    ) : users.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="text-center text-gray-500 py-6">No RSVPs yet</td>
                       </tr>
                     ) : (
-                      data.slice().reverse().map((row, idx) => (
-                        <tr key={idx} className="border-t border-amber-100/70">
-                          <td className="px-4 py-3 text-gray-800 break-words">{row.name}</td>
-                          <td className="px-4 py-3">{row.attendance === 'yes' ? 'Yes' : 'No'}</td>
-                          <td className="px-4 py-3">{row.attendees}</td>
-                          <td className="px-4 py-3 text-gray-700 whitespace-pre-line break-words">{row.message || '—'}</td>
-                          <td className="px-4 py-3 text-gray-500">{new Date(row.submittedAt).toLocaleString()}</td>
+                      users.slice().reverse().map((user, idx) => (
+                        <tr key={user.id || idx} className="border-t border-amber-100/70">
+                          <td className="px-4 py-3 text-gray-800 break-words">{user.name}</td>
+                          <td className="px-4 py-3">{user.status === 1 ? 'Yes' : 'No'}</td>
+                          <td className="px-4 py-3">{user.count || 0}</td>
+                          <td className="px-4 py-3 text-gray-700 whitespace-pre-line break-words">{user.message || '—'}</td>
                         </tr>
                       ))
                     )}
