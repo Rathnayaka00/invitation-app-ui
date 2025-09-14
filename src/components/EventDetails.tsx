@@ -33,7 +33,7 @@ const EventDetails = () => {
                         <Calendar className="text-amber-600" size={22} />
                       </div>
                       <div>
-                        <p className="text-gray-700 font-semibold">Thursday, October 2, 2025</p>
+                        <p className="text-gray-700 font-semibold">Thursday, October 02, 2025</p>
                       </div>
                     </div>
 
