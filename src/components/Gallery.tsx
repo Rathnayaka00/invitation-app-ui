@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Pic1 from '../assests/pic1.jpg';
 import Pic2 from '../assests/pic2.jpg';
-import Pic3 from '../assests/pic3.jpg';
 import Pic4 from '../assests/pic4.jpg';
 
 
