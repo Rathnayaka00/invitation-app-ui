@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import Pic1 from '../assests/pic1.jpg';
+import Pic2 from '../assests/pic2.jpg';
+import Pic3 from '../assests/pic3.jpg';
+import Pic4 from '../assests/pic4.jpg';
+
 
 const Gallery = () => {
   const [currentImage, setCurrentImage] = useState(0);
@@ -9,28 +14,16 @@ const Gallery = () => {
   // Placeholder images - in a real app, these would be actual wedding photos
   const images = [
     {
-      src: 'https://images.pexels.com/photos/1024993/pexels-photo-1024993.jpeg?auto=compress&cs=tinysrgb&w=800',
-      alt: 'Hasini & Sachin - Engagement Photo 1'
+      src: Pic2,
+      alt: 'Hasini & Sachin - Pre-shoot 1'
     },
     {
-      src: 'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=800',
-      alt: 'Hasini & Sachin - Engagement Photo 2'
+      src: Pic4,
+      alt: 'Hasini & Sachin - Pre-shoot 2'
     },
     {
-      src: 'https://images.pexels.com/photos/1729413/pexels-photo-1729413.jpeg?auto=compress&cs=tinysrgb&w=800',
-      alt: 'Hasini & Sachin - Engagement Photo 3'
-    },
-    {
-      src: 'https://images.pexels.com/photos/1444442/pexels-photo-1444442.jpeg?auto=compress&cs=tinysrgb&w=800',
-      alt: 'Hasini & Sachin - Engagement Photo 4'
-    },
-    {
-      src: 'https://images.pexels.com/photos/1024998/pexels-photo-1024998.jpeg?auto=compress&cs=tinysrgb&w=800',
-      alt: 'Hasini & Sachin - Engagement Photo 5'
-    },
-    {
-      src: 'https://images.pexels.com/photos/1043473/pexels-photo-1043473.jpeg?auto=compress&cs=tinysrgb&w=800',
-      alt: 'Hasini & Sachin - Engagement Photo 6'
+      src: Pic1,
+      alt: 'Hasini & Sachin - Pre-shoot 3'
     }
   ];
 
