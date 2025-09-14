@@ -163,7 +163,7 @@ const Admin = () => {
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
                     <Users size={18} />
-                    <span className="font-semibold">Attendees Count: {loadingUsers ? '...' : totals.totalAttendees}</span>
+                    <span className="font-semibold"> {loadingUsers ? '...' : totals.totalAttendees}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

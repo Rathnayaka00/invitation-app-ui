@@ -64,7 +64,7 @@ const Gallery = () => {
             Our Journey
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Capturing the beautiful moments of our love story through the lens of our engagement photoshoot
+            Our journey together, captured in moments of pure love. So excited to share a glimpse of our pre-shoot photos.
           </p>
         </div>
 
